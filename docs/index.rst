@@ -14,7 +14,7 @@ doxxie
 System Requirements
 -------------------
 
-``doxxie`` supports Python 3.6+ and can be run with CPython or PyPy.
+``doxxie`` supports Python 3.7+ and can be run with CPython or PyPy.
 
 
 Installation
