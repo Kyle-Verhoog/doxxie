@@ -38,10 +38,13 @@ plugins = doxxie
 Then run `mypy` with an environment variable specifying which modules to include:
 
 ```bash
-$ DOXXIE_INCLUDES=module mypy
+$ DOXXIE_INCLUDES=module mypy --no-incremental
 ```
 
 A file `.public_api` will be output with the public API of `module`.
+
+**Note:** The `--no-incremental` flag is necessary as `doxxie` cannot get
+access to cached typing information.
 
 
 ## configuration
