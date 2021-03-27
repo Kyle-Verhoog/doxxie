@@ -1,19 +1,16 @@
-import argparse
 import atexit
-import inspect
 import logging
 import os
 import pprint
-import types
 from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Sequence
+from typing import Set
 from typing import Type
 
 from mypy.nodes import ClassDef
 from mypy.nodes import FuncDef
-from mypy.nodes import MypyFile
 from mypy.nodes import SymbolTableNode
 from mypy.nodes import TypeInfo
 from mypy.nodes import Var
