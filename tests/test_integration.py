@@ -10,7 +10,7 @@ TEST_DIR = os.path.dirname(__file__)
 
 def run(
     cmd: str, path: str, env: Optional[Dict[str, str]] = None
-) -> subprocess.CompletedProcess[Any]:
+) -> "subprocess.CompletedProcess[Any]":
     e = os.environ.copy()
     e.update(env or {})
     return subprocess.run(
@@ -106,7 +106,7 @@ def test_comprehensive():
  'pkg.a.A.a': 'Mdef/Var (pkg.a.A.a) : builtins.int',
  'pkg.a.A.d': 'Mdef/Var (pkg.a.A.d) : pkg.internal.ExposedClass2',
  'pkg.a.A.public_method': 'Mdef/FuncDef (pkg.a.A.public_method)',
- 'pkg.a.A.public_method_internal_argument': 'Mdef/FuncDef (pkg.a.A.public_method_internal_argument) : def (self: pkg.a.A, arg: pkg.internal.ExposedClass5) -> Any',
+ 'pkg.a.A.public_method_internal_argument': 'Mdef/FuncDef (pkg.a.A.public_method_internal_argument) : def (self: pkg.a.A, arg: pkg.internal.ExposedClass5)',
  'pkg.a.A.public_method_internal_return': 'Mdef/FuncDef (pkg.a.A.public_method_internal_return) : def (self: pkg.a.A) -> pkg.internal.ExposedClass3',
  'pkg.a.A.public_method_internal_return_union': 'Mdef/FuncDef (pkg.a.A.public_method_internal_return_union) : def (self: pkg.a.A) -> Union[pkg.internal.ExposedClass6, pkg.internal.ExposedClass7]',
  'pkg.a.hello': 'Gdef/FuncDef (pkg.a.hello) : def () -> builtins.int',

@@ -120,7 +120,8 @@ class MypyPlugin(Plugin):
                 for name, item in node.node.names.items():
                     if self._is_private_attr(name):
                         continue
-                    api[item.fullname] = item
+                    if item.fullname:
+                        api[item.fullname] = item
             elif isinstance(node.node, FuncDef):
                 if self._is_private_fn(node.fullname):
                     continue
