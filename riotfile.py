@@ -49,6 +49,7 @@ venv = Venv(
         ),
         Venv(
             name="mypy",
+            env={"DOXXIE_INCLUDES": "doxxie", "DOXXIE_DEBUG": "1"},
             command="mypy {cmdargs}",
             pkgs={
                 "mypy": latest,

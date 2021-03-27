@@ -1,0 +1,4 @@
+{'doxxie.doxxie.MypyPlugin': 'Gdef/TypeInfo (doxxie.doxxie.MypyPlugin)',
+ 'doxxie.doxxie.MypyPlugin.__init__': 'Mdef/FuncDef (doxxie.doxxie.MypyPlugin.__init__)',
+ 'doxxie.doxxie.MypyPlugin.set_modules': 'Mdef/FuncDef (doxxie.doxxie.MypyPlugin.set_modules)',
+ 'doxxie.doxxie.plugin': 'Gdef/FuncDef (doxxie.doxxie.plugin) : def (version: builtins.str) -> Type[doxxie.doxxie.MypyPlugin]'}

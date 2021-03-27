@@ -24,7 +24,7 @@ jobs:
           python-version: '3.8'
       - name: install riot
         run: pip install riot==0.4
-      - run: riot -v run -s mypy
+      - run: riot -v run mypy
   docs:
     runs-on: ubuntu-latest
     steps:
