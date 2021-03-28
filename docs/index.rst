@@ -38,11 +38,6 @@ doxxie can be installed from PyPI with::
         pip install doxxie
 
 
-.. note::
-   riot does not yet have a stable API so it is recommended to pin the riot
-   version to avoid having to deal with breaking changes.
-
-
 Usage
 -----
 
