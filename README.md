@@ -10,13 +10,12 @@
 
 `doxxie` is a [`mypy`](http://mypy-lang.org/) plugin that outputs the true
 public API of a mypy-typed Python library. `doxxie`'s output can be checked
-into source control to ensure changes to the public API are intentional and
-documented.
+into source control and verified with a CI job to ensure changes to the public
+API are intentional and documented.
 
 
-`doxxie` starts with the public API of a library and then recursively adds the
-types used in attributes and functions to the API. This can expose internal
-data structures which are accidentally leaked through the public API.
+`doxxie` starts with the public API of a library and recursively adds any types
+exposed by attributes and functions until the true public API is reached.
 
 
 ## installation
