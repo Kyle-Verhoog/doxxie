@@ -10,6 +10,7 @@ from typing import Set
 from typing import Type
 
 from mypy.nodes import ClassDef
+from mypy.nodes import Decorator
 from mypy.nodes import FuncDef
 from mypy.nodes import SymbolTableNode
 from mypy.nodes import TypeInfo
@@ -27,7 +28,12 @@ log = logging.getLogger(__name__)
 
 class MypyPlugin(Plugin):
     def __init__(
-        self, opts: Options, includes="", excludes="", out=".public_api", debug=False
+        self,
+        opts: Options,
+        includes: str = "",
+        excludes: str = "",
+        out: str = ".public_api",
+        debug: bool = False,
     ):
         super().__init__(opts)
         if os.environ.get("DOXXIE_DEBUG", debug):
@@ -220,7 +226,7 @@ class MypyPlugin(Plugin):
                 continue
 
             public_api[node.fullname] = node
-            if isinstance(node.node, FuncDef):
+            if isinstance(node.node, FuncDef) or isinstance(node.node, Decorator):
                 if node.type and isinstance(node.type, CallableType):
                     # Handle the return type.
                     types = map(str, self._get_types(node.type.ret_type))
@@ -260,7 +266,7 @@ class MypyPlugin(Plugin):
         typed_public_api = {k: str(v) for k, v in public_api.items()}
         log.debug("typed public api %r", typed_public_api)
         with open(self._out_file, "w") as f:
-            pprint.pprint(typed_public_api, stream=f, width=250)
+            pprint.pprint(typed_public_api, stream=f, width=500)
         return
 
 

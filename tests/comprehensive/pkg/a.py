@@ -7,6 +7,7 @@ from pkg.internal import ExposedClass6
 from pkg.internal import ExposedClass7
 from pkg.internal import ExposedClass8
 from pkg.internal import ExposedClass9
+from pkg.internal import ExposedClass10
 from pkg.internal import InternalClass
 
 
@@ -33,6 +34,10 @@ class A:
         self,
     ) -> Union[ExposedClass6, ExposedClass7]:
         return ExposedClass6()
+
+    @property
+    def public_propery_internal_return(self) -> ExposedClass10:
+        return ExposedClass10()
 
 
 class _A:
