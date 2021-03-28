@@ -6,14 +6,13 @@
 [![Tests](https://img.shields.io/github/workflow/status/Kyle-Verhoog/doxxie/CI?label=Tests&style=for-the-badge)](https://github.com/Kyle-Verhoog/doxxie/actions?query=workflow%3ACI)
 [![Codecov](https://img.shields.io/codecov/c/github/Kyle-Verhoog/doxxie?style=for-the-badge)](https://codecov.io/gh/Kyle-Verhoog/doxxie)
 
+<img align="right" src="https://www.dropbox.com/s/gscpfocqxgrjf2f/Photo%202021-03-27%2C%2023%2041%2047.jpg?raw=1" alt="doxxie logo" width="300px"/>
 
 `doxxie` is a [`mypy`](http://mypy-lang.org/) plugin that outputs the true
 public API of a mypy-typed Python library. `doxxie`'s output can be checked
 into source control to ensure changes to the public API are intentional and
 documented.
 
-
-## how?
 
 `doxxie` starts with the public API of a library and then recursively adds the
 types used in attributes and functions to the API. This can expose internal
