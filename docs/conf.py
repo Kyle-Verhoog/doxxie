@@ -20,6 +20,9 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx_rtd_theme",
     "reno.sphinxext",
+    "m2r2",
 ]
 
 html_theme = "sphinx_rtd_theme"
+
+source_suffix = [".rst", ".md"]

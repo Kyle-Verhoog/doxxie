@@ -57,7 +57,7 @@ venv = Venv(
             },
         ),
         Venv(
-            pys=[3],
+            pys=["3"],
             name="codecov",
             command="bash <(curl -s https://codecov.io/bash)",
             pkgs={
@@ -72,6 +72,7 @@ venv = Venv(
                 "sphinx-rtd-theme": "==0.5.0",
                 "sphinx-click": "==2.5.0",
                 "reno": latest,
+                "m2r2": latest,
             },
         ),
         Venv(

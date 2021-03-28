@@ -7,8 +7,10 @@ Development of doxxie takes place at https://github.com/Kyle-Verhoog/doxxie.
 Formatting
 ----------
 
-Code formatting is managed with `black <https://github.com/psf/black>`_. To
-format code::
+Code formatting is managed with `black <https://github.com/psf/black>`_ and
+`isort <https://pycqa.github.io/isort/>`_.
+
+To format code::
 
         $ riot run fmt
 
