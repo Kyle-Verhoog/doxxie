@@ -16,7 +16,7 @@ jobs:
         run: pip install mypy
       - name: install doxxie
         run: pip install .
-      - run: DOXXIE_INCLUDES=doxxie DOXXIE_DEBUG=1 DOXXIE_OUTFILE=.public_api_delta mypy --no-incremental
+      - run: DOXXIE_INCLUDES=doxxie DOXXIE_DEBUG=1 DOXXIE_OUTFILE=.public_api_delta mypy --no-incremental doxxie/
       - run: diff .public_api .public_api_delta
   black:
     runs-on: ubuntu-latest

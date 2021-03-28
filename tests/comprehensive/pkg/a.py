@@ -1,3 +1,4 @@
+from typing import Dict
 from typing import Union
 
 from pkg.internal import ExposedClass2
@@ -8,6 +9,7 @@ from pkg.internal import ExposedClass7
 from pkg.internal import ExposedClass8
 from pkg.internal import ExposedClass9
 from pkg.internal import ExposedClass10
+from pkg.internal import ExposedClass11
 from pkg.internal import InternalClass
 
 
@@ -17,6 +19,7 @@ class A:
         self._b = b
         self._c: InternalClass = InternalClass(a, b)
         self.d: ExposedClass2 = ExposedClass2()
+        self.e: Dict[str, ExposedClass11] = dict()
 
     def public_method(self):
         pass

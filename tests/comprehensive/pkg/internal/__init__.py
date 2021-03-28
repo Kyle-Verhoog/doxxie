@@ -92,3 +92,11 @@ class ExposedClass10:
 
     def _private_method(self):
         pass
+
+
+class ExposedClass11:
+    def public_method(self):
+        pass
+
+    def _private_method(self):
+        pass

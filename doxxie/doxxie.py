@@ -18,8 +18,11 @@ from mypy.nodes import Var
 from mypy.options import Options
 from mypy.plugin import Plugin
 from mypy.types import CallableType
+from mypy.types import Instance
 from mypy.types import NoneType  # noqa used doctest
+from mypy.types import TupleType
 from mypy.types import Type as MypyType
+from mypy.types import TypeList
 from mypy.types import UnionType
 
 
@@ -82,7 +85,7 @@ class MypyPlugin(Plugin):
             if not self._in_includes(modname):
                 continue
             for defn in mod.defs:
-                if any(isinstance(defn, typ) for typ in [FuncDef, ClassDef]):
+                if isinstance(defn, (FuncDef, ClassDef, Decorator)):
                     self._api_hints.add(f"{modname}.{defn.name}")
                 else:
                     # TODO: handle top-level assignments (AssignmentStmt)
@@ -173,9 +176,14 @@ class MypyPlugin(Plugin):
         >>> MypyPlugin._get_types(UnionType(items=[NoneType(), NoneType()]))
         [None, None]
         """
-        # TODO: handle list, dict, etc - way to handle arbitrary?
-        if isinstance(typ, UnionType):
+        if isinstance(typ, (UnionType, TypeList, TupleType)):
             return typ.items
+        # Handle Dict, List, etc
+        elif isinstance(typ, Instance):
+            # Note that typ is included as well since we don't know if the type
+            # is a user defined type.
+            # eg. InternalType[OtherInternalType]
+            return [typ, *typ.args]
         return [typ]
 
     def _initial_public_api(self) -> Dict[str, SymbolTableNode]:
@@ -210,7 +218,7 @@ class MypyPlugin(Plugin):
                     continue
                 api[node.node.fullname] = node
             else:
-                raise NotImplementedError
+                log.debug("%r not yet supported", node.node)
         return api
 
     def _expand_api(
@@ -226,7 +234,9 @@ class MypyPlugin(Plugin):
                 continue
 
             public_api[node.fullname] = node
-            if isinstance(node.node, FuncDef) or isinstance(node.node, Decorator):
+            # TODO: probably have to use mypy.nodes.SYMBOL_FUNCBASE_TYPES here
+            # to be safe.
+            if isinstance(node.node, (FuncDef, Decorator)):
                 if node.type and isinstance(node.type, CallableType):
                     # Handle the return type.
                     types = map(str, self._get_types(node.type.ret_type))
@@ -236,12 +246,14 @@ class MypyPlugin(Plugin):
 
                     # Handle argument types.
                     for argtype in node.type.arg_types:
-                        types = map(str, self._get_types(node.type.ret_type))
+                        types = map(str, self._get_types(argtype))
                         for stype in types:
                             if self._in_includes(stype):
                                 to_add.append(self.lookup_fully_qualified(stype))
+            # TypeInfo is used for classes.
             elif isinstance(node.node, TypeInfo):
                 clsfullname = node.fullname
+                # TODO?: have to _get_types on the class here?
                 for name, attr in node.node.names.items():
                     fullname = f"{clsfullname}.{name}"
                     if self._is_private_attr(fullname):
@@ -249,12 +261,15 @@ class MypyPlugin(Plugin):
                     to_add.append(self.lookup_fully_qualified(fullname))
                 # TODO: go up MRO for additional public methods
             elif isinstance(node.node, Var):
-                stype = str(node.type)
-                if self._in_includes(stype):
-                    to_add.append(self.lookup_fully_qualified(stype))
+                if not node.type:
+                    continue
+                types = map(str, self._get_types(node.type))
+                for stype in types:
+                    if self._in_includes(stype):
+                        to_add.append(self.lookup_fully_qualified(stype))
             else:
                 # TODO: anything to handle here?
-                log.debug("%r not supported", node.node)
+                log.debug("%r not yet supported", node.node)
         return public_api
 
     def _done(self):
