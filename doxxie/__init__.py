@@ -1,3 +1,3 @@
 __all__ = ["plugin"]
 
-from .doxxie import _plugin as plugin
+from .doxxie import plugin

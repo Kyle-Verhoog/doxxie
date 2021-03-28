@@ -270,5 +270,5 @@ class MypyPlugin(Plugin):
         return
 
 
-def _plugin(version: str) -> Type[MypyPlugin]:
+def plugin(version: str) -> Type[MypyPlugin]:
     return MypyPlugin
