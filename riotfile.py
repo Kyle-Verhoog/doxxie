@@ -57,14 +57,6 @@ venv = Venv(
             },
         ),
         Venv(
-            pys=["3"],
-            name="codecov",
-            command="bash <(curl -s https://codecov.io/bash)",
-            pkgs={
-                "coverage": latest,
-            },
-        ),
-        Venv(
             name="docs",
             command="sphinx-build {cmdargs} -W -b html docs docs/_build/",
             pkgs={

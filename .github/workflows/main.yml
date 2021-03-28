@@ -80,5 +80,7 @@ jobs:
         run: pip install riot==0.4
       - name: run tests
         run: riot -v run --python=${{ matrix.python-version }} test
-      - name: Coverage
-        run: riot -v run -s --python=${{ matrix.python-version }} codecov
+      - name: upload coverage
+        uses: codecov/codecov-action@v1
+        with:
+          files: .coverage
