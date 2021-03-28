@@ -54,10 +54,14 @@ access to cached typing information.
 
 All configuration is done via environment variables.
 
-- `DOXXIE_INCLUDES`: comma-separated list of modules to include in the public API
+- `DOXXIE_INCLUDES`: comma-separated list of modules to include in the public
+  API. Only items found under the modules provided will be included in the
+  public API output.
   - example: `"mod1,mod2"`
   - default: `""`
-- `DOXXIE_EXCLUDES`: comma-separated list of modules to exclude from the public API
+- `DOXXIE_EXCLUDES`: comma-separated list of modules to exclude from the public
+  API. These modules will be ignored initially but items from these modules may
+  be exposed by the public API and included in the output.
   - example: `"mod1.internal,mod1.vendor"`
   - default: `""`
 - `DOXXIE_OUTFILE`: file to output the results
