@@ -243,9 +243,10 @@ class MypyPlugin(Plugin):
             if not node or not node.fullname or node.fullname in public_api:
                 continue
 
-            chain.append(node)
             # Ensure to make a copy of the chain else it could be mutated later on.
-            public_api[node.fullname] = chain.copy()
+            chain = chain.copy()
+            chain.append(node)
+            public_api[node.fullname] = chain
             # TODO: probably have to use mypy.nodes.SYMBOL_FUNCBASE_TYPES here
             # to be safe.
             if isinstance(node.node, (FuncDef, Decorator)):
@@ -301,7 +302,7 @@ class MypyPlugin(Plugin):
                 derived_public_api = {
                     k: [_.fullname for _ in c] for k, c in public_api.items()
                 }
-                pprint.pprint(derived_public_api, stream=f, width=1000)
+                pprint.pprint(derived_public_api, stream=f, width=80)
         return
 
     def set_modules(self, modules):
