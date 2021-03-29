@@ -137,6 +137,25 @@ def public_fn() -> _InternalType:
     )
 
 
+def test_private_module(dox_tmp_path):
+    d = dox_tmp_path / "pkg" / "_internal"
+    d.mkdir()
+    f = dox_tmp_path / "pkg" / "__init__.py"
+    f.write_text("")
+    f = dox_tmp_path / "pkg" / "_internal" / "__init__.py"
+    f.write_text(
+        """
+def fn():
+    pass
+    """
+    )
+
+    p = run("mypy", dox_tmp_path, dict(DOXXIE_INCLUDES="pkg"))
+    assert p.returncode == 0
+    outfile = dox_tmp_path / ".public_api"
+    assert outfile.read_text() == "{}\n"
+
+
 def test_comprehensive():
     d = os.path.join(TEST_DIR, "comprehensive")
     p = run(
