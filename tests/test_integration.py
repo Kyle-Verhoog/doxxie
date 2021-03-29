@@ -1,5 +1,6 @@
 import os
 import subprocess
+import sys
 from typing import Any
 from typing import Dict
 from typing import Optional
@@ -35,9 +36,19 @@ def run(
 ) -> "subprocess.CompletedProcess[Any]":
     e = os.environ.copy()
     e.update(env or {})
-    return subprocess.run(
-        cmd.split(" "), capture_output=True, env=e, cwd=path, text=True
-    )
+    if sys.version_info < (3, 7, 0):
+        return subprocess.run(
+            cmd.split(" "),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            encoding="utf-8",
+            env=e,
+            cwd=path,
+        )
+    else:
+        return subprocess.run(
+            cmd.split(" "), capture_output=True, env=e, cwd=path, text=True
+        )
 
 
 def test_mypy_failed_typecheck(tmp_path):
