@@ -78,30 +78,23 @@ class MypyPlugin(Plugin):
         """
         return any(name.startswith(i) for i in self._includes)
 
-    def set_modules(self, modules):
-        """Set the plugin modules.
-        This method is called by mypy when new modules are processed. mypy
-        typically caches the modules that it processes which means that
-        this method will only be called with uncached modules. Hence it's
-        recommended that the plugin only be used with the --no-incremental
-        option of mypy.
+    @staticmethod
+    def _is_private_mod(fullname: str) -> bool:
         """
-        log.debug("got modules %r", modules.keys())
-        # At this point class attribute and method types are not yet evaluated
-        # so _api_hints will only contain classes, functions and top-level
-        # objects.
-        for modname, mod in modules.items():
-            if not self._in_includes(modname):
-                continue
-            for defn in mod.defs:
-                if isinstance(defn, (FuncDef, ClassDef, Decorator)):
-                    self._api_hints.add(f"{modname}.{defn.name}")
-                else:
-                    # TODO: handle top-level assignments (AssignmentStmt)
-                    # eg: public_var = ExposedClass()
-                    pass
-        log.debug("collected hints %r", self._api_hints)
-        return super().set_modules(modules)
+        >>> MypyPlugin._is_private_mod("mod._internal")
+        True
+        >>> MypyPlugin._is_private_mod("_internal.mod")
+        True
+        >>> MypyPlugin._is_private_mod("pub.fn.field")
+        False
+        >>> MypyPlugin._is_private_mod("pub.fn.field._int")
+        True
+        """
+        split = fullname.split(".")
+        for part in split:
+            if part.startswith("_"):
+                return True
+        return False
 
     @staticmethod
     def _is_private_cls(fullname: str) -> bool:
@@ -310,6 +303,31 @@ class MypyPlugin(Plugin):
                 }
                 pprint.pprint(derived_public_api, stream=f, width=1000)
         return
+
+    def set_modules(self, modules):
+        """Set the plugin modules.
+        This method is called by mypy when new modules are processed. mypy
+        typically caches the modules that it processes which means that
+        this method will only be called with uncached modules. Hence it's
+        recommended that the plugin only be used with the --no-incremental
+        option of mypy.
+        """
+        log.debug("got modules %r", modules.keys())
+        # At this point class attribute and method types are not yet evaluated
+        # so _api_hints will only contain classes, functions and top-level
+        # objects.
+        for modname, mod in modules.items():
+            if not self._in_includes(modname) or self._is_private_mod(modname):
+                continue
+            for defn in mod.defs:
+                if isinstance(defn, (FuncDef, ClassDef, Decorator)):
+                    self._api_hints.add(f"{modname}.{defn.name}")
+                else:
+                    # TODO: handle top-level assignments (AssignmentStmt)
+                    # eg: public_var = ExposedClass()
+                    pass
+        log.debug("collected hints %r", self._api_hints)
+        return super().set_modules(modules)
 
 
 def plugin(version: str) -> Type[MypyPlugin]:
