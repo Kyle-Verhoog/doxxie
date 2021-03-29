@@ -23,7 +23,7 @@ exposed by attributes and functions until the true public API is reached.
 Install from PyPI:
 
 ```sh
-pip install doxxie
+$ pip install doxxie
 ```
 
 
@@ -67,6 +67,11 @@ All configuration is done via environment variables.
 - `DOXXIE_OUTFILE`: file to output the results
   - example: `"my_public_api"`
   - default: `".public_api"`
+- `DOXXIE_DERIVE_OUTFILE`: file to output derivation results for each item
+  included in the public API. This output can be used to show what chain of
+  attributes led to an item being exposed.
+  - example: `"public_api_derivation"`
+  - default: disabled
 - `DOXXIE_DEBUG`: enable debug logging
   - example: `"1"`
   - default: disabled

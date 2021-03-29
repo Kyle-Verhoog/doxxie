@@ -7,6 +7,7 @@ from typing import List
 from typing import Optional
 from typing import Sequence
 from typing import Set
+from typing import Tuple
 from typing import Type
 
 from mypy.nodes import ClassDef
@@ -42,20 +43,28 @@ class MypyPlugin(Plugin):
         if os.environ.get("DOXXIE_DEBUG", debug):
             logging.basicConfig(level=logging.DEBUG)
 
+        self._deriv_outfile: Optional[str] = os.environ.get(
+            "DOXXIE_DERIVE_OUTFILE", None
+        )
+
         includes = os.environ.get("DOXXIE_INCLUDES", includes)
         self._includes: List[str] = includes.split(",") if includes else []
 
         excludes = os.environ.get("DOXXIE_EXCLUDES", excludes)
         self._excludes: List[str] = excludes.split(",") if excludes else []
-        self._out_file = os.environ.get("DOXXIE_OUTFILE", out)
+        self._outfile = os.environ.get("DOXXIE_OUTFILE", out)
         log.debug(
-            "doxxie initialized with includes=%r, excludes=%r, outfile=%r",
+            "doxxie initialized with includes=%r, excludes=%r, outfile=%r, derivfile",
             self._includes,
             self._excludes,
-            self._out_file,
+            self._outfile,
+            self._deriv_outfile,
         )
 
         self._api_hints: Set[str] = set()
+
+        # A bit of a hack since mypy plugins don't get a hook for when all the
+        # checking is complete.
         atexit.register(self._done)
 
     def _in_includes(self, name: str) -> bool:
@@ -223,17 +232,27 @@ class MypyPlugin(Plugin):
 
     def _expand_api(
         self, api: Dict[str, SymbolTableNode]
-    ) -> Dict[str, SymbolTableNode]:
-        public_api: Dict[str, SymbolTableNode] = {}
-        to_add: List[Optional[SymbolTableNode]] = list(api.values())
+    ) -> Dict[str, List[SymbolTableNode]]:
+        """Expand the given API to include all exposed types."""
+        # The resulting public API. The derivation of each member is stored so
+        # that it can also be output. The last node in the list is the node
+        # associated with the key.
+        public_api: Dict[str, List[SymbolTableNode]] = {}
+
+        # List of nodes to process, starting with the initial API.
+        to_add: List[Tuple[List[SymbolTableNode], Optional[SymbolTableNode]]] = [
+            ([], node) for node in api.values()
+        ]
         while to_add:
-            node = to_add.pop(0)
+            chain, node = to_add.pop(0)
 
             # Shortcut already seen items.
             if not node or not node.fullname or node.fullname in public_api:
                 continue
 
-            public_api[node.fullname] = node
+            chain.append(node)
+            # Ensure to make a copy of the chain else it could be mutated later on.
+            public_api[node.fullname] = chain.copy()
             # TODO: probably have to use mypy.nodes.SYMBOL_FUNCBASE_TYPES here
             # to be safe.
             if isinstance(node.node, (FuncDef, Decorator)):
@@ -242,23 +261,24 @@ class MypyPlugin(Plugin):
                     types = map(str, self._get_types(node.type.ret_type))
                     for stype in types:
                         if self._in_includes(stype):
-                            to_add.append(self.lookup_fully_qualified(stype))
+                            to_add.append((chain, self.lookup_fully_qualified(stype)))
 
                     # Handle argument types.
                     for argtype in node.type.arg_types:
                         types = map(str, self._get_types(argtype))
                         for stype in types:
                             if self._in_includes(stype):
-                                to_add.append(self.lookup_fully_qualified(stype))
+                                to_add.append(
+                                    (chain, self.lookup_fully_qualified(stype))
+                                )
             # TypeInfo is used for classes.
             elif isinstance(node.node, TypeInfo):
                 clsfullname = node.fullname
-                # TODO?: have to _get_types on the class here?
                 for name, attr in node.node.names.items():
                     fullname = f"{clsfullname}.{name}"
                     if self._is_private_attr(fullname):
                         continue
-                    to_add.append(self.lookup_fully_qualified(fullname))
+                    to_add.append((chain, self.lookup_fully_qualified(fullname)))
                 # TODO: go up MRO for additional public methods
             elif isinstance(node.node, Var):
                 if not node.type:
@@ -266,22 +286,29 @@ class MypyPlugin(Plugin):
                 types = map(str, self._get_types(node.type))
                 for stype in types:
                     if self._in_includes(stype):
-                        to_add.append(self.lookup_fully_qualified(stype))
+                        to_add.append((chain, self.lookup_fully_qualified(stype)))
             else:
                 # TODO: anything to handle here?
                 log.debug("%r not yet supported", node.node)
         return public_api
 
-    def _done(self):
+    def _done(self) -> None:
         initial_api = self._initial_public_api()
         log.debug("initial public api %r", initial_api)
         public_api = self._expand_api(initial_api)
 
         # Add types to public API.
-        typed_public_api = {k: str(v) for k, v in public_api.items()}
+        typed_public_api = {k: str(c[-1]) for k, c in public_api.items()}
         log.debug("typed public api %r", typed_public_api)
-        with open(self._out_file, "w") as f:
+        with open(self._outfile, "w") as f:
             pprint.pprint(typed_public_api, stream=f, width=500)
+
+        if self._deriv_outfile:
+            with open(self._deriv_outfile, "w") as f:
+                derived_public_api = {
+                    k: [_.fullname for _ in c] for k, c in public_api.items()
+                }
+                pprint.pprint(derived_public_api, stream=f, width=1000)
         return
 
 
