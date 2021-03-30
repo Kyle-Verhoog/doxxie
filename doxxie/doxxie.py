@@ -54,7 +54,7 @@ class MypyPlugin(Plugin):
         self._excludes: List[str] = excludes.split(",") if excludes else []
         self._outfile = os.environ.get("DOXXIE_OUTFILE", out)
         log.debug(
-            "doxxie initialized with includes=%r, excludes=%r, outfile=%r, derivfile",
+            "doxxie initialized with includes=%r, excludes=%r, outfile=%r, derivfile=%r",
             self._includes,
             self._excludes,
             self._outfile,
