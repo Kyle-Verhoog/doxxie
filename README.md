@@ -13,8 +13,9 @@ source control and [verified with a CI job](#ci-job) to ensure changes to the pu
 are intentional and documented.
 
 
-`doxxie` starts with the public API of a library and recursively adds any types
-exposed by attributes and functions until the true public API is reached.
+`doxxie` burrows into the public API of a library and recursively digs out any
+types exposed by public attributes and functions until the true public API is
+reached.
 
 
 ## installation
@@ -48,6 +49,78 @@ A file `.public_api` will be output with the public API of `mylib`.
 
 **Note:** The `--no-incremental` flag is necessary as `doxxie` cannot get
 access to mypy's cached typing information.
+
+## output
+
+`doxxie` outputs a `.public_api` file which contains a listing of all the
+public variables of the modules specified.
+
+### example
+
+*See docs/example for the code shown below*
+
+Consider the following Python library `lib`:
+
+```
+lib/
+├── __init__.py
+├── api/
+│   └── __init__.py
+└── _internal/
+    └── __init__.py
+```
+
+```ini
+[mypy]
+files = .
+plugins = doxxie
+```
+
+```python
+# api/__init__.py
+
+from lib._internal import LeakedPrivate, Private
+
+class Public:
+    def __init__(self):
+        self.public_attr: int = 5
+        self.public_leak: LeakedPrivate = LeakedPrivate()
+        self._private: Private = Private()
+
+    def public_method(self) -> None:
+        pass
+
+    def _private_method(self) -> str:
+        return "hi"
+```
+
+
+```python
+# _internal/__init__.py
+
+class LeakedPrivate:
+    def public_method(self) -> None:
+        pass
+
+
+class Private:
+    pass
+```
+
+Running `DOXXIE_INCLUDES=pkg.api DOXXIE_EXCLUDES=pkg._internal mypy` will
+output the following to `.public_api`:
+
+```python
+{'lib.Private': 'Gdef/TypeInfo (lib.Private)',
+ 'lib.Private.public_method': 'Mdef/FuncDef (lib.Private.public_method) : def (self: lib.Private)',
+ 'lib._internal.LeakedPrivate': 'Gdef/TypeInfo (lib._internal.LeakedPrivate)',
+ 'lib._internal.LeakedPrivate.public_method': 'Mdef/FuncDef (lib._internal.LeakedPrivate.public_method) : def (self: lib._internal.LeakedPrivate)',
+ 'lib.api.Public': 'Gdef/TypeInfo (lib.api.Public)',
+ 'lib.api.Public.__init__': 'Mdef/FuncDef (lib.api.Public.__init__)',
+ 'lib.api.Public.public_attr': 'Mdef/Var (lib.api.Public.public_attr) : builtins.int',
+ 'lib.api.Public.public_leak': 'Mdef/Var (lib.api.Public.public_leak) : lib._internal.LeakedPrivate',
+ 'lib.api.Public.public_method': 'Mdef/FuncDef (lib.api.Public.public_method) : def (self: lib.api.Public)'}
+```
 
 
 ## configuration

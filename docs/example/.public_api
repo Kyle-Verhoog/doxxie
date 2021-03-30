@@ -1,0 +1,9 @@
+{'lib.Private': 'Gdef/TypeInfo (lib.Private)',
+ 'lib.Private.public_method': 'Mdef/FuncDef (lib.Private.public_method) : def (self: lib.Private)',
+ 'lib._internal.LeakedPrivate': 'Gdef/TypeInfo (lib._internal.LeakedPrivate)',
+ 'lib._internal.LeakedPrivate.public_method': 'Mdef/FuncDef (lib._internal.LeakedPrivate.public_method) : def (self: lib._internal.LeakedPrivate)',
+ 'lib.api.Public': 'Gdef/TypeInfo (lib.api.Public)',
+ 'lib.api.Public.__init__': 'Mdef/FuncDef (lib.api.Public.__init__)',
+ 'lib.api.Public.public_attr': 'Mdef/Var (lib.api.Public.public_attr) : builtins.int',
+ 'lib.api.Public.public_leak': 'Mdef/Var (lib.api.Public.public_leak) : lib._internal.LeakedPrivate',
+ 'lib.api.Public.public_method': 'Mdef/FuncDef (lib.api.Public.public_method) : def (self: lib.api.Public)'}
