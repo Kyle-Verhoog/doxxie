@@ -137,6 +137,33 @@ def public_fn() -> _InternalType:
     )
 
 
+def test_expose_through_mro(dox_tmp_path):
+    f = dox_tmp_path / "pkg" / "__init__.py"
+    f.write_text(
+        """
+class _InternalType0:
+    def public_method(self):
+        pass
+
+class _InternalType1(_InternalType0):
+    pass
+
+class _InternalType2:
+    pass
+
+class Public(_InternalType1, _InternalType2):
+    pass
+    """
+    )
+    p = run("mypy", dox_tmp_path, dict(DOXXIE_INCLUDES="pkg"))
+    assert p.returncode == 0
+    outfile = dox_tmp_path / ".public_api"
+    assert (
+        outfile.read_text()
+        == "{'pkg.Public': 'Gdef/TypeInfo (pkg.Public)', 'pkg._InternalType0': 'Gdef/TypeInfo (pkg._InternalType0)', 'pkg._InternalType0.public_method': 'Mdef/FuncDef (pkg._InternalType0.public_method)', 'pkg._InternalType1': 'Gdef/TypeInfo (pkg._InternalType1)', 'pkg._InternalType2': 'Gdef/TypeInfo (pkg._InternalType2)'}\n"
+    )
+
+
 def test_private_module(dox_tmp_path):
     d = dox_tmp_path / "pkg" / "_internal"
     d.mkdir()

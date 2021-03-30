@@ -273,7 +273,10 @@ class MypyPlugin(Plugin):
                     if self._is_private_attr(fullname):
                         continue
                     to_add.append((chain, self.lookup_fully_qualified(fullname)))
-                # TODO: go up MRO for additional public methods
+                for n in node.node.mro:
+                    if n.fullname and self._in_includes(n.fullname):
+                        to_add.append((chain, self.lookup_fully_qualified(n.fullname)))
+
             elif isinstance(node.node, Var):
                 if not node.type:
                     continue
