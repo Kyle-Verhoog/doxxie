@@ -10,6 +10,11 @@ class InternalClass:
         pass
 
 
+class _InternalClass:
+    def __init__(self) -> None:
+        pass
+
+
 class ExposedClass2:
     def __init__(self):
         pass
@@ -100,3 +105,7 @@ class ExposedClass11:
 
     def _private_method(self):
         pass
+
+
+class ExposedClass12:
+    pass

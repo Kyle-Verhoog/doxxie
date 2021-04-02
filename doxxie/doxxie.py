@@ -10,6 +10,7 @@ from typing import Set
 from typing import Tuple
 from typing import Type
 
+from mypy.nodes import AssignmentStmt
 from mypy.nodes import ClassDef
 from mypy.nodes import Decorator
 from mypy.nodes import FuncDef
@@ -219,6 +220,10 @@ class MypyPlugin(Plugin):
                 if self._is_private_fn(node.fullname):
                     continue
                 api[node.node.fullname] = node
+            elif isinstance(node.node, Var):
+                if self._is_private_attr(node.fullname):
+                    continue
+                api[node.node.fullname] = node
             else:
                 log.debug("%r not yet supported", node.node)
         return api
@@ -281,7 +286,7 @@ class MypyPlugin(Plugin):
                 if not node.type:
                     continue
                 types = map(str, self._get_types(node.type))
-                for stype in types:
+                for stype in list(types):
                     if self._in_includes(stype):
                         to_add.append((chain, self.lookup_fully_qualified(stype)))
             else:
@@ -326,9 +331,10 @@ class MypyPlugin(Plugin):
             for defn in mod.defs:
                 if isinstance(defn, (FuncDef, ClassDef, Decorator)):
                     self._api_hints.add(f"{modname}.{defn.name}")
+                elif isinstance(defn, AssignmentStmt):
+                    for val in defn.lvalues:
+                        self._api_hints.add(f"{modname}.{val.name}")
                 else:
-                    # TODO: handle top-level assignments (AssignmentStmt)
-                    # eg: public_var = ExposedClass()
                     pass
         log.debug("collected hints %r", self._api_hints)
         return super().set_modules(modules)

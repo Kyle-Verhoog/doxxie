@@ -1,4 +1,5 @@
 {'doxxie.doxxie.MypyPlugin': 'Gdef/TypeInfo (doxxie.doxxie.MypyPlugin)',
  'doxxie.doxxie.MypyPlugin.__init__': 'Mdef/FuncDef (doxxie.doxxie.MypyPlugin.__init__) : def (self: doxxie.doxxie.MypyPlugin, opts: mypy.options.Options, includes: builtins.str =, excludes: builtins.str =, out: builtins.str =, debug: builtins.bool =)',
  'doxxie.doxxie.MypyPlugin.set_modules': 'Mdef/FuncDef (doxxie.doxxie.MypyPlugin.set_modules)',
+ 'doxxie.doxxie.log': 'Gdef/Var (doxxie.doxxie.log) : logging.Logger',
  'doxxie.doxxie.plugin': 'Gdef/FuncDef (doxxie.doxxie.plugin) : def (version: builtins.str) -> Type[doxxie.doxxie.MypyPlugin]'}

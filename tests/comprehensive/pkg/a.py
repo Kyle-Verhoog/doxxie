@@ -10,7 +10,9 @@ from pkg.internal import ExposedClass8
 from pkg.internal import ExposedClass9
 from pkg.internal import ExposedClass10
 from pkg.internal import ExposedClass11
+from pkg.internal import ExposedClass12
 from pkg.internal import InternalClass
+from pkg.internal import _InternalClass
 
 
 class A:
@@ -60,3 +62,7 @@ def _hello():
 
 
 var = ExposedClass8()
+
+pub_var1 = pub_var2 = ExposedClass12()
+
+_var = _InternalClass()
