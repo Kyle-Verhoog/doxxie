@@ -5,7 +5,7 @@
 [![PypiVersions](https://img.shields.io/pypi/v/doxxie.svg?style=for-the-badge)](https://pypi.org/project/doxxie/)
 [![Tests](https://img.shields.io/github/workflow/status/Kyle-Verhoog/doxxie/CI?label=Tests&style=for-the-badge)](https://github.com/Kyle-Verhoog/doxxie/actions?query=workflow%3ACI)
 
-<img align="right" src="https://www.dropbox.com/s/4aqchcnoq1jgfnx/Photo%202021-03-27%2C%2023%2041%2047%20%281%29.jpg?raw=1" alt="doxxie logo" width="300px"/>
+<img align="right" src="https://www.dropbox.com/s/5tjxiwtg927c5qf/Photo%202021-04-04%2C%2012%2053%2022.jpg?raw=1" alt="doxxie logo" width="300px"/>
 
 `doxxie` is a [mypy](http://mypy-lang.org/) plugin that outputs the true public
 API of a mypy-typed Python library. `doxxie`'s output can be checked into
