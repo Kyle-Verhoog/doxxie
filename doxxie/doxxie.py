@@ -1,4 +1,6 @@
 import atexit
+from collections.abc import Collection
+from collections.abc import Mapping
 import logging
 import os
 import pprint
@@ -29,6 +31,43 @@ from mypy.types import UnionType
 
 
 log = logging.getLogger(__name__)
+
+
+_ALL = object()
+
+
+def _pick(base: Mapping, pick: Collection) -> Mapping:
+    """Pick the elements of `pick` that are in `base` recursively.
+    >>> _pick({"a": {"b": 3, "c": 4}}, {"a": {"b"}})
+    {'a': {'b': 3}}
+    >>> _pick({"a": 1, "b": 2}, {"a", "b"}) == {"a": 1, "b": 2}
+    True
+    >>> _pick({"a": 1, "b": 2}, {"a", "c"})
+    {'a': 1}
+    >>> _pick({"a": {"b": 3, "c": 4}}, {"a": {"b": {"c"}}})
+    {'a': {'b': {}}}
+    >>> _pick({"a": 3}, {"x": {"y": {"z"}}})
+    {}
+    >>> d = {"a": {"b": 3, "c": 4}, "b": 2}
+    >>> _pick(d, {"a": _ALL, "b": _ALL}) == d
+    True
+    """
+    new: Dict = {}
+    next_keys = [(k, base, pick, new) for k in pick]
+    while next_keys:
+        key, val, pck, n = next_keys.pop()
+        if isinstance(val, Mapping) and isinstance(pck, Mapping):
+            if key in val:
+                if pck[key] == _ALL:
+                    n[key] = val[key]
+                else:
+                    n[key] = {}
+                    next_keys.extend(
+                        [(k, val[key], pck[key], n[key]) for k in pck[key]]
+                    )
+        elif isinstance(val, Mapping) and key in val:
+            n[key] = val[key]
+    return new
 
 
 class MypyPlugin(Plugin):
@@ -299,11 +338,65 @@ class MypyPlugin(Plugin):
         log.debug("initial public api %r", initial_api)
         public_api = self._expand_api(initial_api)
 
-        # Add types to public API.
-        typed_public_api = {k: str(c[-1]) for k, c in public_api.items()}
-        log.debug("typed public api %r", typed_public_api)
+        # Generate the public API output.
+        public_api_output = {}
+        for k, c in public_api.items():
+            # Last element is the actual node.
+            node = c[-1]
+            fullname = node.fullname
+            if not fullname:
+                continue
+
+            basename = ".".join(fullname.split(".")[:-1])
+            name = fullname.split(".")[-1]
+            serialized = node.serialize(basename, name)
+
+            if isinstance(node.node, FuncDef):
+                out = _pick(
+                    serialized,
+                    {
+                        "node": {
+                            # Changing a kwarg to an arg can break the API.
+                            "arg_kinds": _ALL,
+                            # Changes to arg names break the public API.
+                            "arg_names": _ALL,
+                            "kind": _ALL,
+                            "type": {
+                                "arg_types",
+                                "ret_type",
+                            },
+                        }
+                    },
+                )
+                public_api_output[k] = out["node"]
+            elif isinstance(node.node, TypeInfo):
+                out = _pick(
+                    serialized,
+                    {
+                        "node": {
+                            # Base class changes can affect the public API.
+                            "bases": _ALL,
+                            # MRO changes can affect the public API.
+                            "mro": _ALL,
+                            "kind": _ALL,
+                        },
+                    },
+                )
+                public_api_output[k] = out["node"]
+            elif isinstance(node.node, Var):
+                out = _pick(
+                    serialized,
+                    {
+                        "node": {
+                            "type": _ALL,
+                        },
+                    },
+                )
+                public_api_output[k] = out["node"]
+
+        log.debug("public api %r", public_api_output)
         with open(self._outfile, "w") as f:
-            pprint.pprint(typed_public_api, stream=f, width=500)
+            pprint.pprint(public_api_output, stream=f, width=80)
 
         if self._deriv_outfile:
             with open(self._deriv_outfile, "w") as f:
