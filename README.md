@@ -70,15 +70,8 @@ lib/
     └── __init__.py
 ```
 
-```ini
-[mypy]
-files = .
-plugins = doxxie
-```
-
 ```python
 # api/__init__.py
-
 from lib._internal import LeakedPrivate, Private
 
 class Public:
@@ -97,11 +90,9 @@ class Public:
 
 ```python
 # _internal/__init__.py
-
 class LeakedPrivate:
     def public_method(self) -> None:
         pass
-
 
 class Private:
     pass
@@ -111,15 +102,30 @@ Running `DOXXIE_INCLUDES=pkg.api DOXXIE_EXCLUDES=pkg._internal mypy` will
 output the following to `.public_api`:
 
 ```python
-{'lib.Private': 'Gdef/TypeInfo (lib.Private)',
- 'lib.Private.public_method': 'Mdef/FuncDef (lib.Private.public_method) : def (self: lib.Private)',
- 'lib._internal.LeakedPrivate': 'Gdef/TypeInfo (lib._internal.LeakedPrivate)',
- 'lib._internal.LeakedPrivate.public_method': 'Mdef/FuncDef (lib._internal.LeakedPrivate.public_method) : def (self: lib._internal.LeakedPrivate)',
- 'lib.api.Public': 'Gdef/TypeInfo (lib.api.Public)',
- 'lib.api.Public.__init__': 'Mdef/FuncDef (lib.api.Public.__init__)',
- 'lib.api.Public.public_attr': 'Mdef/Var (lib.api.Public.public_attr) : builtins.int',
- 'lib.api.Public.public_leak': 'Mdef/Var (lib.api.Public.public_leak) : lib._internal.LeakedPrivate',
- 'lib.api.Public.public_method': 'Mdef/FuncDef (lib.api.Public.public_method) : def (self: lib.api.Public)'}
+{'lib.Private': {'bases': ['builtins.object'],
+                 'mro': ['lib.Private', 'builtins.object']},
+ 'lib.Private.public_method': {'arg_kinds': [0],
+                               'arg_names': ['self'],
+                               'type': {'arg_types': ['lib.Private'],
+                                        'ret_type': {'.class': 'NoneType'}}},
+ 'lib._internal.LeakedPrivate': {'bases': ['builtins.object'],
+                                 'mro': ['lib._internal.LeakedPrivate',
+                                         'builtins.object']},
+ 'lib._internal.LeakedPrivate.public_method': {'arg_kinds': [0],
+                                               'arg_names': ['self'],
+                                               'type': {'arg_types': ['lib._internal.LeakedPrivate'],
+                                                        'ret_type': {'.class': 'NoneType'}}},
+ 'lib.api.Public': {'bases': ['builtins.object'],
+                    'mro': ['lib.api.Public', 'builtins.object']},
+ 'lib.api.Public.__init__': {'arg_kinds': [0],
+                             'arg_names': ['self'],
+                             'type': {}},
+ 'lib.api.Public.public_attr': {'type': 'builtins.int'},
+ 'lib.api.Public.public_leak': {'type': 'lib._internal.LeakedPrivate'},
+ 'lib.api.Public.public_method': {'arg_kinds': [0],
+                                  'arg_names': ['self'],
+                                  'type': {'arg_types': ['lib.api.Public'],
+                                           'ret_type': {'.class': 'NoneType'}}}}
 ```
 
 
