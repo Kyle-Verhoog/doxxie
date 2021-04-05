@@ -66,3 +66,6 @@ var = ExposedClass8()
 pub_var1 = pub_var2 = ExposedClass12()
 
 _var = _InternalClass()
+
+_x = [0]
+_x[0] = 4

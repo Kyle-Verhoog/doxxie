@@ -16,6 +16,7 @@ from mypy.nodes import AssignmentStmt
 from mypy.nodes import ClassDef
 from mypy.nodes import Decorator
 from mypy.nodes import FuncDef
+from mypy.nodes import NameExpr
 from mypy.nodes import SymbolTableNode
 from mypy.nodes import TypeInfo
 from mypy.nodes import Var
@@ -426,7 +427,11 @@ class MypyPlugin(Plugin):
                     self._api_hints.add(f"{modname}.{defn.name}")
                 elif isinstance(defn, AssignmentStmt):
                     for val in defn.lvalues:
-                        self._api_hints.add(f"{modname}.{val.name}")
+                        # TODO: Add support for TupleExpr and others listed below
+                        # https://github.com/python/mypy/blob/797544d8f97c478770eb178ba966cc7b1d0e6020/mypy/nodes.py#L203
+                        if isinstance(val, NameExpr):
+                            name = val.name
+                            self._api_hints.add(f"{modname}.{name}")
                 else:
                     pass
         log.debug("collected hints %r", self._api_hints)
