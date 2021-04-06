@@ -57,7 +57,9 @@ public variables of the modules specified.
 
 ### example
 
-*See docs/example for the code shown below*
+*See
+[`docs/example`](https://github.com/Kyle-Verhoog/doxxie/tree/main/docs/example)
+for the code shown below*
 
 Consider the following Python library `lib`:
 
@@ -77,7 +79,7 @@ from lib._internal import LeakedPrivate, Private
 class Public:
     def __init__(self):
         self.public_attr: int = 5
-        self.public_leak: LeakedPrivate = LeakedPrivate()
+        self.public_leak: LeakedPrivate = LeakedPrivate()  # leaks an internal class!
         self._private: Private = Private()
 
     def public_method(self) -> None:
@@ -102,13 +104,7 @@ Running `DOXXIE_INCLUDES=pkg.api DOXXIE_EXCLUDES=pkg._internal mypy` will
 output the following to `.public_api`:
 
 ```python
-{'lib.Private': {'bases': ['builtins.object'],
-                 'mro': ['lib.Private', 'builtins.object']},
- 'lib.Private.public_method': {'arg_kinds': [0],
-                               'arg_names': ['self'],
-                               'type': {'arg_types': ['lib.Private'],
-                                        'ret_type': {'.class': 'NoneType'}}},
- 'lib._internal.LeakedPrivate': {'bases': ['builtins.object'],
+{'lib._internal.LeakedPrivate': {'bases': ['builtins.object'],
                                  'mro': ['lib._internal.LeakedPrivate',
                                          'builtins.object']},
  'lib._internal.LeakedPrivate.public_method': {'arg_kinds': [0],
@@ -127,6 +123,10 @@ output the following to `.public_api`:
                                   'type': {'arg_types': ['lib.api.Public'],
                                            'ret_type': {'.class': 'NoneType'}}}}
 ```
+
+Here we see that the internal class `LeakedPrivate` has been included in the
+public API as it was leaked through a public attribute on a public class in a
+public module.
 
 
 ## configuration
@@ -165,8 +165,12 @@ CI job.
 
 ### github workflow
 
+This workflow compares the generated API to the one stored in the repo. If
+there are any differences then the public API might have been unintentionally
+broken.
+
 ```yaml
-name: CI
+name: Public API check
 on:
   pull_request:
   push:
@@ -180,8 +184,14 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: '3.9'
-      - name: install dependencies
+      - name: Install dependencies
         run: pip install mypy doxxie
-      - run: DOXXIE_INCLUDES=doxxie DOXXIE_OUTFILE=.public_api_delta mypy --no-incremental
-      - run: diff .public_api .public_api_delta
+      - name: Run mypy with doxxie output
+        run: mypy --no-incremental
+        env:
+          DOXXIE_INCLUDES: # the top level module of the library
+          DOXXIE_EXCLUDES: # any internal modules to exclude
+          DOXXIE_OUTFILE: .public_api_delta
+      - name: Ensure no changes have been made
+        run: diff .public_api .public_api_delta
 ```
