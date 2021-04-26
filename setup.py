@@ -30,6 +30,11 @@ setup(
     ],
     setup_requires=["setuptools_scm"],
     use_scm_version=True,
+    entry_points={
+        "console_scripts": [
+            "doxxie=doxxie.stubgen:main",
+        ]
+    },
     # Required for mypy compatibility, see
     # https://mypy.readthedocs.io/en/stable/installed_packages.html#making-pep-561-compatible-packages
     zip_safe=False,
