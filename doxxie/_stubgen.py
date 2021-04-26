@@ -496,13 +496,13 @@ def _get_types(typ: Type) -> Sequence[Type]:
 def find_public_api(mods, excludes, files) -> Set[str]:
     initial_public_api: Set[str] = set()
 
-    modules = [mod.module for mod in mods]
     for mod in mods:
         to_add: Set[str] = set()
         finder = PublicAPIFinder(mods, excludes, to_add, files)
         mod.ast.accept(finder)
         initial_public_api |= to_add
 
+    modules = [mod.module for mod in mods]
     def _in_includes(name: str) -> bool:
         return any(name.startswith(m) for m in modules)
 
@@ -519,7 +519,7 @@ def find_public_api(mods, excludes, files) -> Set[str]:
         if not node:
             continue
 
-        if isinstance(node.node, (FuncDef, Decorator)):
+        if isinstance(node.node, (FuncDef, Decorator, OverloadedFuncDef)):
             if node.type and isinstance(node.type, CallableType):
                 types = map(str, _get_types(node.type.ret_type))
                 for stype in types:
@@ -584,7 +584,7 @@ class PublicAPIFinder(mypy.traverser.TraverserVisitor):
             super().visit_class_def(o)
 
     def visit_mypy_file(self, o: MypyFile) -> None:
-        if any(o.fullname.startswith(e) for e in self.excludes):
+        if any(o.fullname.startswith(e) for e in self.excludes) or _is_private_name(o.name):
             return
         self.public_api.add(o.fullname)
         super().visit_mypy_file(o)
@@ -820,8 +820,9 @@ class StubGenerator(mypy.traverser.TraverserVisitor):
 
                 init_annotation = None
                 if cls_node and isinstance(cls_node.node, TypeInfo):
-                    attr_node = cls_node.node.names[init]  # should always exist?
-                    init_annotation = attr_node.type
+                    if init in cls_node.node.names:
+                        attr_node = cls_node.node.names[init]  # should always exist?
+                        init_annotation = attr_node.type
 
                 init_code = self.get_init(init, value, init_annotation)
                 if init_code:
@@ -842,9 +843,10 @@ class StubGenerator(mypy.traverser.TraverserVisitor):
                               if isinstance(o.unanalyzed_type, CallableType) else None)
             if node and isinstance(node.node, (FuncDef, Decorator)):
                 if node.type and isinstance(node.type, CallableType):
-                    arg_type = node.type.arg_types[i]
-                    annotated_type = arg_type
-                    self.add_type_imports(arg_type)
+                    if i < len(node.type.arg_types):
+                        arg_type = node.type.arg_types[i]
+                        annotated_type = arg_type
+                        self.add_type_imports(arg_type)
 
             # I think the name check is incorrect: there are libraries which
             # name their 0th argument other than self/cls
@@ -1861,7 +1863,8 @@ def parse_options(args: List[str]) -> Options:
                         help="generate stubs for package recursively; can be repeated")
     parser.add_argument('--public-api-only', action='store_true', dest='public_api_only',
                         help="only generate stubs for the public API")
-    parser.add_argument('--public-api-excludes', default='', dest='public_api_excludes',
+    parser.add_argument('-e', '--public-api-exclude',  action='append', dest='public_api_excludes',
+                        default=[],
                         help="only generate the public API")
     parser.add_argument(metavar='files', nargs='*', dest='files',
                         help="generate stubs for given files or directories")
@@ -1896,7 +1899,7 @@ def parse_options(args: List[str]) -> Options:
                    quiet=ns.quiet,
                    export_less=ns.export_less,
                    public_api_only=ns.public_api_only,
-                   public_api_excludes=ns.public_api_excludes.split(":"))
+                   public_api_excludes=ns.public_api_excludes)
 
 
 def main() -> None:

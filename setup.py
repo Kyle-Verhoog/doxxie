@@ -32,7 +32,7 @@ setup(
     use_scm_version=True,
     entry_points={
         "console_scripts": [
-            "doxxie=doxxie.stubgen:main",
+            "doxxie=doxxie._stubgen:main",
         ]
     },
     # Required for mypy compatibility, see
