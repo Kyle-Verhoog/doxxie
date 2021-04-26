@@ -13,11 +13,11 @@ jobs:
         with:
           python-version: '3.9'
       - name: install mypy
-        run: pip install mypy
+        run: pip install git+git://github.com/python/mypy.git@66c2ac516305f194a9bc37c1ebf7f22d62d6141c
       - name: install doxxie
         run: pip install .
-      - run: DOXXIE_INCLUDES=doxxie DOXXIE_DEBUG=1 DOXXIE_OUTFILE=.public_api_delta mypy --no-incremental doxxie/
-      - run: diff .public_api .public_api_delta
+      - run: doxxie --public-api-only doxxie/ --output public_api
+      - run: git diff --exit-code
   black:
     runs-on: ubuntu-latest
     steps:
