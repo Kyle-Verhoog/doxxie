@@ -821,7 +821,7 @@ class StubGenerator(mypy.traverser.TraverserVisitor):
                 init_annotation = None
                 if cls_node and isinstance(cls_node.node, TypeInfo):
                     if init in cls_node.node.names:
-                        attr_node = cls_node.node.names[init]  # should always exist?
+                        attr_node = cls_node.node.names[init]
                         init_annotation = attr_node.type
 
                 init_code = self.get_init(init, value, init_annotation)
@@ -841,7 +841,7 @@ class StubGenerator(mypy.traverser.TraverserVisitor):
             name = var.name
             annotated_type = (o.unanalyzed_type.arg_types[i]
                               if isinstance(o.unanalyzed_type, CallableType) else None)
-            if node and isinstance(node.node, (FuncDef, Decorator)):
+            if annotated_type is None and node and isinstance(node.node, (FuncDef, Decorator)):
                 if node.type and isinstance(node.type, CallableType):
                     if i < len(node.type.arg_types):
                         arg_type = node.type.arg_types[i]
