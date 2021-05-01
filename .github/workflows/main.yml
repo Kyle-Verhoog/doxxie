@@ -80,3 +80,24 @@ jobs:
         run: pip install riot==0.4
       - name: run tests
         run: riot -v run --python=${{ matrix.python-version }} test
+  test_integration:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: [3.6, 3.7, 3.8, 3.9, pypy3]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: install mypy
+        run: pip install git+git://github.com/python/mypy.git@66c2ac516305f194a9bc37c1ebf7f22d62d6141c
+      - name: install
+        run: pip install .
+      - run: cd tests/comprehensive
+      - name: run doxxie
+        run: doxxie --public-api-only --public-api-exclude=pkg.internal pkg --output public_api
+      - name: verify no changes
+        run: git diff --exit-code
