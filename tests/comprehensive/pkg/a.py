@@ -1,3 +1,4 @@
+from typing import Callable
 from typing import Dict
 from typing import Union
 
@@ -59,6 +60,10 @@ def public_function_internal_return() -> ExposedClass9:
 
 def _hello():
     return
+
+
+def fn_takes_fn(fn: Callable[[int, int], float]) -> float:
+    return fn(1, 2)
 
 
 var = ExposedClass8()
