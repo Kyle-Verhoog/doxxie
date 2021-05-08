@@ -11,7 +11,6 @@ venv = Venv(
             pys=["3.6", "3.7", "3.8", "3.9"],
             pkgs={
                 "pytest": latest,
-                "pytest-cov": latest,
                 "mypy": latest,
             },
         ),
@@ -49,7 +48,6 @@ venv = Venv(
         ),
         Venv(
             name="mypy",
-            env={"DOXXIE_INCLUDES": "doxxie", "DOXXIE_DEBUG": "1"},
             command="mypy {cmdargs}",
             pkgs={
                 "mypy": latest,
@@ -62,7 +60,6 @@ venv = Venv(
             pkgs={
                 "sphinx": "==3.3",
                 "sphinx-rtd-theme": "==0.5.0",
-                "sphinx-click": "==2.5.0",
                 "reno": latest,
                 "m2r2": latest,
             },
