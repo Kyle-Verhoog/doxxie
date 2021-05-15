@@ -56,7 +56,7 @@ venv = Venv(
         ),
         Venv(
             name="docs",
-            command="sphinx-build {cmdargs} -W -b html docs docs/_build/",
+            command="sphinx-build {cmdargs} -b html docs docs/_build/",
             pkgs={
                 "sphinx": "==3.3",
                 "sphinx-rtd-theme": "==0.5.0",

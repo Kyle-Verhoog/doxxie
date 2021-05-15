@@ -50,11 +50,11 @@ directory.
 
 ### excluding modules
 
-Modules can be excluded with the `--public-api-exclude/-e` argument.
+Modules can be excluded with the `--public-api-exclude` argument.
 
 
 ```bash
-$ doxxie --public-api-only pkg -e pkg.internal --output public_api
+$ doxxie --public-api-only pkg --public-api-exclude pkg.internal --output public_api
 ```
 
 
